@@ -14,6 +14,10 @@ from .static.sample_mode import *
 from .static.simulation import *
 from .arrange import _arrange
 
+from typing import TypeVar
+
+TypeNodeTree = TypeVar("NodetreeType", "GeometryNodeTree", "ShaderNodeTree", "CompositorNodeTree")
+
 def _as_iterable(x):
     if isinstance(x, Type):
         return [x,]
@@ -22,7 +26,7 @@ def _as_iterable(x):
     except TypeError:
         return [x,]
 
-def tree(name):
+def tree(name, nodetree_type: TypeNodeTree):
     tree_name = name
     def build_tree(builder):
         signature = inspect.signature(builder)
@@ -32,7 +36,7 @@ def tree(name):
         if tree_name in bpy.data.node_groups:
             node_group = bpy.data.node_groups[tree_name]
         else:
-            node_group = bpy.data.node_groups.new(tree_name, 'GeometryNodeTree')
+            node_group = bpy.data.node_groups.new(tree_name, nodetree_type)
         # Clear the node group before building
         for node in node_group.nodes:
             node_group.nodes.remove(node)
@@ -42,8 +46,13 @@ def tree(name):
             node_group.outputs.remove(group_output)
         
         # Setup the group inputs
-        group_input_node = node_group.nodes.new('NodeGroupInput')
-        group_output_node = node_group.nodes.new('NodeGroupOutput')
+        if nodetree_type == 'GeometryNodeTree':
+          group_input_node = node_group.nodes.new('NodeGroupInput')
+          group_output_node = node_group.nodes.new('NodeGroupOutput')
+        elif nodetree_type == 'ShaderNodeTree':
+          group_output_node = node_group.nodes.new('ShaderNodeMaterialOutput')
+        elif nodetree_type == 'CompositorNodeTree':
+          group_output_node = node_group.nodes.new('CompositorNodeComposite')
 
         # Collect the inputs
         inputs = {}
