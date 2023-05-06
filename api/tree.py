@@ -26,7 +26,7 @@ def _as_iterable(x):
     except TypeError:
         return [x,]
 
-def tree(name, nodetree_type: TypeNodeTree):
+def tree(name, nodetree_type: TypeNodeTree= "GeometryNodeTree"):
     tree_name = name
     def build_tree(builder):
         signature = inspect.signature(builder)
