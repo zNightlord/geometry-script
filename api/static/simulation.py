@@ -21,5 +21,7 @@ def simulation(block: typing.Callable[typing.Any, 'Geometry']):
                     kwargs[key] = simulation_in.delta_time
                 case SimulationInput.ElapsedTime:
                     kwargs[key] = simulation_in.elapsed_time
-        return simulation_output(geometry=block(simulation_in.geometry, *args, **kwargs)).geometry
+        simulation_output = simulation_output(geometry=block(simulation_in.geometry, *args, **kwargs))
+        simulation_input.pair_with_output(simulation_output)
+        return simulation_output.geometry
     return wrapped
